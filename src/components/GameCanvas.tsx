@@ -8,24 +8,23 @@ import type { GameState } from '@/lib/gameTypes';
 interface GameCanvasProps {
   onGameOver: (score: number) => void;
   isPlaying: boolean;
+  /** Shared ref so external touch controls can drive input */
+  keysRef: React.MutableRefObject<{ left: boolean; right: boolean; shoot: boolean }>;
 }
 
-export function GameCanvas({ onGameOver, isPlaying }: GameCanvasProps) {
+export function GameCanvas({ onGameOver, isPlaying, keysRef }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState>(createInitialState());
-  const keysRef = useRef({ left: false, right: false, shoot: false });
   const frameRef = useRef(0);
   const animFrameRef = useRef<number>(0);
   const gameOverCalledRef = useRef(false);
   const [canvasScale, setCanvasScale] = useState(1);
-  const touchStartRef = useRef<{ x: number; time: number } | null>(null);
-  const touchMoveRef = useRef<'left' | 'right' | null>(null);
 
   // Calculate scale to fit screen
   useEffect(() => {
     function handleResize() {
       const maxW = Math.min(window.innerWidth - 16, 500);
-      const maxH = window.innerHeight - 200;
+      const maxH = window.innerHeight - 280; // extra room for touch controls
       const scaleW = maxW / GAME_WIDTH;
       const scaleH = maxH / GAME_HEIGHT;
       setCanvasScale(Math.min(scaleW, scaleH, 1.5));
@@ -42,7 +41,7 @@ export function GameCanvas({ onGameOver, isPlaying }: GameCanvasProps) {
       gameOverCalledRef.current = false;
       keysRef.current = { left: false, right: false, shoot: false };
     }
-  }, [isPlaying]);
+  }, [isPlaying, keysRef]);
 
   // Keyboard controls
   useEffect(() => {
@@ -69,73 +68,7 @@ export function GameCanvas({ onGameOver, isPlaying }: GameCanvasProps) {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isPlaying]);
-
-  // Touch controls
-  useEffect(() => {
-    if (!isPlaying) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    function handleTouchStart(e: TouchEvent) {
-      e.preventDefault();
-      const touch = e.touches[0];
-      touchStartRef.current = { x: touch.clientX, time: Date.now() };
-      touchMoveRef.current = null;
-    }
-
-    function handleTouchMove(e: TouchEvent) {
-      e.preventDefault();
-      if (!touchStartRef.current) return;
-      const touch = e.touches[0];
-      const dx = touch.clientX - touchStartRef.current.x;
-      const threshold = 10;
-
-      if (dx < -threshold) {
-        keysRef.current.left = true;
-        keysRef.current.right = false;
-        touchMoveRef.current = 'left';
-      } else if (dx > threshold) {
-        keysRef.current.right = true;
-        keysRef.current.left = false;
-        touchMoveRef.current = 'right';
-      } else {
-        keysRef.current.left = false;
-        keysRef.current.right = false;
-        touchMoveRef.current = null;
-      }
-    }
-
-    function handleTouchEnd(e: TouchEvent) {
-      e.preventDefault();
-      keysRef.current.left = false;
-      keysRef.current.right = false;
-
-      // If it was a quick tap (not a swipe), fire a bullet
-      if (touchStartRef.current) {
-        const duration = Date.now() - touchStartRef.current.time;
-        if (duration < 250 && !touchMoveRef.current) {
-          keysRef.current.shoot = true;
-          setTimeout(() => {
-            keysRef.current.shoot = false;
-          }, 100);
-        }
-      }
-
-      touchStartRef.current = null;
-      touchMoveRef.current = null;
-    }
-
-    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-    return () => {
-      canvas.removeEventListener('touchstart', handleTouchStart);
-      canvas.removeEventListener('touchmove', handleTouchMove);
-      canvas.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isPlaying]);
+  }, [isPlaying, keysRef]);
 
   // Game loop
   const gameLoop = useCallback(() => {
@@ -160,7 +93,7 @@ export function GameCanvas({ onGameOver, isPlaying }: GameCanvasProps) {
     renderGame(ctx, gameStateRef.current, frameRef.current);
 
     animFrameRef.current = requestAnimationFrame(gameLoop);
-  }, [isPlaying, onGameOver]);
+  }, [isPlaying, onGameOver, keysRef]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -188,7 +121,6 @@ export function GameCanvas({ onGameOver, isPlaying }: GameCanvasProps) {
 
     function animateIdle() {
       frame++;
-      // Just animate stars
       idleState = {
         ...idleState,
         stars: idleState.stars.map((star) => ({

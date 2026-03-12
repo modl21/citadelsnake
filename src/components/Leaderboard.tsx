@@ -43,7 +43,7 @@ export function Leaderboard() {
                 }`}
               >
                 <span
-                  className={`font-pixel text-[10px] w-5 text-center ${
+                  className={`font-pixel text-[10px] w-5 text-center shrink-0 ${
                     i === 0
                       ? 'text-accent'
                       : i === 1
@@ -57,10 +57,10 @@ export function Leaderboard() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <span className="text-sm text-foreground truncate block">
-                    {maskLightningAddress(entry.lightning)}
+                    {entry.lightning}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 shrink-0">
                   <Zap className="size-3 text-accent" />
                   <span className="font-pixel text-[10px] text-accent tabular-nums">
                     {entry.score.toLocaleString()}
@@ -78,11 +78,4 @@ export function Leaderboard() {
       </div>
     </div>
   );
-}
-
-function maskLightningAddress(address: string): string {
-  const [name, domain] = address.split('@');
-  if (!name || !domain) return address;
-  if (name.length <= 3) return `${name}@${domain}`;
-  return `${name.slice(0, 2)}${'*'.repeat(Math.min(name.length - 2, 4))}@${domain}`;
 }

@@ -55,7 +55,7 @@ export interface GameState {
   screenShake: number;
 }
 
-export type GamePhase = 'idle' | 'paying' | 'playing' | 'gameOver';
+export type GamePhase = 'idle' | 'paying' | 'ready' | 'playing' | 'gameOver';
 
 export interface LeaderboardEntry {
   lightning: string;

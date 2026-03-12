@@ -1,15 +1,17 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSeoMeta } from '@unhead/react';
-import { Zap, Gamepad2, Smartphone, Keyboard } from 'lucide-react';
+import { Zap, Gamepad2, Smartphone, Keyboard, Play } from 'lucide-react';
 import type { NSecSigner } from '@nostrify/nostrify';
 
 import { Button } from '@/components/ui/button';
 import { GameCanvas } from '@/components/GameCanvas';
+import { TouchControls } from '@/components/TouchControls';
 import { PaymentGate } from '@/components/PaymentGate';
 import { Leaderboard } from '@/components/Leaderboard';
 import { WeeklyWinnerBanner } from '@/components/WeeklyWinnerBanner';
 import { GameOverOverlay } from '@/components/GameOverOverlay';
 import { usePublishScore } from '@/hooks/usePublishScore';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import type { GamePhase } from '@/lib/gameTypes';
 import type { GameInvoice } from '@/lib/lightning';
 
@@ -19,11 +21,13 @@ const Index = () => {
     description: 'A retro arcade shooter powered by Bitcoin Lightning. Pay 100 sats for one life, compete for the weekly high score, and claim glory on the Nostr-powered leaderboard.',
   });
 
+  const isMobile = useIsMobile();
   const [phase, setPhase] = useState<GamePhase>('idle');
   const [showPayment, setShowPayment] = useState(false);
   const [lightningAddress, setLightningAddress] = useState('');
   const [finalScore, setFinalScore] = useState(0);
   const signerRef = useRef<NSecSigner | null>(null);
+  const keysRef = useRef({ left: false, right: false, shoot: false });
   const { mutateAsync: publishScore, isPending: isPublishing } = usePublishScore();
 
   const handleStartGame = useCallback(() => {
@@ -33,17 +37,18 @@ const Index = () => {
   const handlePaid = useCallback((address: string, gameInvoice: GameInvoice) => {
     setLightningAddress(address);
     setShowPayment(false);
-    setPhase('playing');
-
-    // Reuse the ephemeral signer from the invoice (already created for zap request)
+    setPhase('ready');
     signerRef.current = gameInvoice.signer;
+  }, []);
+
+  const handleLaunchGame = useCallback(() => {
+    setPhase('playing');
   }, []);
 
   const handleGameOver = useCallback(async (score: number) => {
     setFinalScore(score);
     setPhase('gameOver');
 
-    // Publish score to Nostr
     if (signerRef.current && lightningAddress) {
       try {
         await publishScore({
@@ -89,6 +94,7 @@ const Index = () => {
           <GameCanvas
             onGameOver={handleGameOver}
             isPlaying={phase === 'playing'}
+            keysRef={keysRef}
           />
 
           {/* Idle overlay */}
@@ -129,9 +135,43 @@ const Index = () => {
                   </div>
                   <div className="flex items-center gap-1">
                     <Smartphone className="size-3" />
-                    <span className="text-[8px] font-pixel">SWIPE + TAP</span>
+                    <span className="text-[8px] font-pixel">ON-SCREEN BUTTONS</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Ready overlay — payment received, waiting to start */}
+          {phase === 'ready' && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/60 backdrop-blur-[2px] rounded-lg">
+              <div className="text-center space-y-6 p-6">
+                <div className="space-y-2">
+                  <p className="font-pixel text-[10px] text-primary/70 tracking-wider">
+                    PAYMENT RECEIVED
+                  </p>
+                  <p className="font-pixel text-sm text-foreground tracking-wider">
+                    GET READY
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleLaunchGame}
+                  className="bg-primary text-primary-foreground font-pixel text-sm hover:bg-primary/90 h-14 px-10 shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] transition-shadow animate-pulse-glow"
+                >
+                  <Play className="size-5 mr-2 fill-current" />
+                  START
+                </Button>
+
+                {isMobile ? (
+                  <p className="text-[9px] text-muted-foreground/50 font-pixel">
+                    USE ON-SCREEN BUTTONS TO PLAY
+                  </p>
+                ) : (
+                  <p className="text-[9px] text-muted-foreground/50 font-pixel">
+                    ARROWS TO MOVE &middot; SPACE TO FIRE
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -145,6 +185,11 @@ const Index = () => {
             />
           )}
         </div>
+
+        {/* Touch controls — visible on mobile while playing */}
+        {isMobile && phase === 'playing' && (
+          <TouchControls keysRef={keysRef} />
+        )}
 
         {/* Leaderboard */}
         <Leaderboard />
