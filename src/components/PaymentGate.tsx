@@ -185,9 +185,19 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
     setTimeout(() => setCopied(false), 2000);
   }, [invoice]);
 
+  // Only allow closing on the address step — once an invoice is shown, lock the dialog
+  const handleOpenChange = useCallback((o: boolean) => {
+    if (!o && step === 'invoice') return; // blocked
+    if (!o) onClose();
+  }, [step, onClose]);
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-[#0a0a0f] border-primary/30 max-w-sm mx-auto">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className={`bg-[#0a0a0f] border-primary/30 max-w-sm mx-auto ${step === 'invoice' ? '[&>button:last-of-type]:hidden' : ''}`}
+        onEscapeKeyDown={(e) => { if (step === 'invoice') e.preventDefault(); }}
+        onInteractOutside={(e) => { if (step === 'invoice') e.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle className="font-pixel text-sm text-primary text-center tracking-wider">
             INSERT COIN
