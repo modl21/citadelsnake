@@ -28,6 +28,30 @@ interface VerifyResponse {
 }
 
 /**
+ * Fetch JSON from a URL, trying direct first then falling back to the CORS proxy.
+ */
+async function fetchJSON<T>(url: string): Promise<T> {
+  // Try direct first — many Lightning servers set permissive CORS
+  try {
+    const direct = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    if (direct.ok) {
+      return await direct.json() as T;
+    }
+  } catch {
+    // CORS or network error — fall through to proxy
+  }
+
+  // Proxy fallback
+  const proxied = await fetch(`${CORS_PROXY}${encodeURIComponent(url)}`, {
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!proxied.ok) {
+    throw new Error(`Request failed: ${proxied.status} ${proxied.statusText}`);
+  }
+  return await proxied.json() as T;
+}
+
+/**
  * Resolve a lightning address to an LNURL-pay endpoint
  */
 export async function resolveLightningAddress(address: string): Promise<LNURLPayResponse> {
@@ -37,14 +61,8 @@ export async function resolveLightningAddress(address: string): Promise<LNURLPay
   }
 
   const url = `https://${domain}/.well-known/lnurlp/${name}`;
-  const response = await fetch(`${CORS_PROXY}${encodeURIComponent(url)}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to resolve lightning address: ${response.statusText}`);
-  }
+  const data = await fetchJSON<LNURLPayResponse>(url);
 
-  const data = await response.json() as LNURLPayResponse;
-  
   if (data.tag !== 'payRequest') {
     throw new Error('Invalid LNURL-pay response');
   }
@@ -59,15 +77,9 @@ export async function resolveLightningAddress(address: string): Promise<LNURLPay
 export async function requestInvoice(callback: string, amountMsat: number): Promise<GameInvoice> {
   const separator = callback.includes('?') ? '&' : '?';
   const url = `${callback}${separator}amount=${amountMsat}`;
-  
-  const response = await fetch(`${CORS_PROXY}${encodeURIComponent(url)}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to request invoice: ${response.statusText}`);
-  }
 
-  const data = await response.json() as LNURLInvoiceResponse;
-  
+  const data = await fetchJSON<LNURLInvoiceResponse>(url);
+
   if (!data.pr) {
     throw new Error('No payment request in response');
   }
@@ -83,13 +95,13 @@ export async function requestInvoice(callback: string, amountMsat: number): Prom
  */
 export async function getGameInvoice(): Promise<GameInvoice> {
   const lnurlPay = await resolveLightningAddress(PAYMENT_RECIPIENT);
-  
+
   const amountMsat = PAYMENT_AMOUNT_SATS * 1000;
-  
+
   if (amountMsat < lnurlPay.minSendable || amountMsat > lnurlPay.maxSendable) {
     throw new Error(
       `Amount ${PAYMENT_AMOUNT_SATS} sats is outside the allowed range ` +
-      `(${lnurlPay.minSendable / 1000}-${lnurlPay.maxSendable / 1000} sats)`
+      `(${lnurlPay.minSendable / 1000}-${lnurlPay.maxSendable / 1000} sats)`,
     );
   }
 
@@ -98,16 +110,15 @@ export async function getGameInvoice(): Promise<GameInvoice> {
 
 /**
  * Poll a LUD-21 verify URL to check if an invoice has been settled.
- * Returns true if the payment is confirmed, false otherwise.
+ * Tries direct fetch first, falls back to CORS proxy.
+ * Returns true if the payment is confirmed, false if not yet or on error.
  */
 export async function checkPaymentSettled(verifyUrl: string): Promise<boolean> {
   try {
-    const response = await fetch(`${CORS_PROXY}${encodeURIComponent(verifyUrl)}`);
-    if (!response.ok) return false;
-
-    const data = await response.json() as VerifyResponse;
+    const data = await fetchJSON<VerifyResponse>(verifyUrl);
     return data.settled === true;
   } catch {
+    // Network errors or proxy failures — keep polling, don't crash
     return false;
   }
 }
@@ -124,7 +135,7 @@ export function isWebLNAvailable(): boolean {
  */
 export async function payWithWebLN(invoice: string): Promise<boolean> {
   if (!isWebLNAvailable()) return false;
-  
+
   try {
     await window.webln!.enable();
     await window.webln!.sendPayment(invoice);

@@ -15,7 +15,7 @@ interface PaymentGateProps {
   onClose: () => void;
 }
 
-const POLL_INTERVAL_MS = 2500;
+const POLL_INTERVAL_MS = 2000;
 
 export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
   const [lightningAddress, setLightningAddress] = useState('');
@@ -26,19 +26,19 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [polling, setPolling] = useState(false);
-  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const paidRef = useRef(false);
 
-  // Clean up polling on unmount or close
+  // Refs to avoid stale closures in the polling loop
+  const pollingRef = useRef(false);
+  const cancelledRef = useRef(false);
+
+  // Stop any active polling
   const stopPolling = useCallback(() => {
-    if (pollTimerRef.current) {
-      clearInterval(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
+    pollingRef.current = false;
+    cancelledRef.current = true;
     setPolling(false);
   }, []);
 
-  // Reset when opened
+  // Reset when dialog opens/closes
   useEffect(() => {
     if (open) {
       setStep('address');
@@ -48,8 +48,8 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
       setCopied(false);
       setLoading(false);
       setPolling(false);
-      paidRef.current = false;
-      stopPolling();
+      pollingRef.current = false;
+      cancelledRef.current = false;
     } else {
       stopPolling();
     }
@@ -57,24 +57,43 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => stopPolling();
-  }, [stopPolling]);
+    return () => {
+      pollingRef.current = false;
+      cancelledRef.current = true;
+    };
+  }, []);
 
-  // Start polling for payment verification
+  // Polling loop using recursive setTimeout for better control
   const startPolling = useCallback((verifyUrl: string, address: string) => {
     stopPolling();
+    cancelledRef.current = false;
+    pollingRef.current = true;
     setPolling(true);
 
-    pollTimerRef.current = setInterval(async () => {
-      if (paidRef.current) return;
+    async function poll() {
+      // Check if we should still be polling
+      if (!pollingRef.current || cancelledRef.current) return;
 
-      const settled = await checkPaymentSettled(verifyUrl);
-      if (settled) {
-        paidRef.current = true;
-        stopPolling();
-        onPaid(address);
+      try {
+        const settled = await checkPaymentSettled(verifyUrl);
+        if (settled && pollingRef.current && !cancelledRef.current) {
+          pollingRef.current = false;
+          setPolling(false);
+          onPaid(address);
+          return;
+        }
+      } catch {
+        // Ignore errors, keep polling
       }
-    }, POLL_INTERVAL_MS);
+
+      // Schedule next poll if still active
+      if (pollingRef.current && !cancelledRef.current) {
+        setTimeout(poll, POLL_INTERVAL_MS);
+      }
+    }
+
+    // Start first poll after a short delay (give payment time to propagate)
+    setTimeout(poll, 1000);
   }, [stopPolling, onPaid]);
 
   const handleSubmitAddress = useCallback(async () => {
@@ -210,27 +229,27 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
               <p className="text-destructive text-xs">{error}</p>
             )}
 
-            {hasVerify ? (
+            {hasVerify && polling ? (
               /* Payment verification is active — auto-detect when paid */
               <div className="space-y-3">
                 <div className="flex items-center justify-center gap-2 py-3 rounded-md bg-secondary/30 border border-primary/10">
                   <Loader2 className="size-4 text-primary animate-spin" />
                   <span className="font-pixel text-[10px] text-primary tracking-wider">
-                    {polling ? 'WAITING FOR PAYMENT...' : 'VERIFYING...'}
+                    WAITING FOR PAYMENT...
                   </span>
                 </div>
                 <p className="text-[10px] text-center text-muted-foreground/50">
-                  Pay the invoice &mdash; the game starts automatically once confirmed
+                  Pay the invoice — the game starts automatically once confirmed
                 </p>
               </div>
             ) : (
-              /* No verify URL — fallback to manual confirmation */
+              /* No verify URL or polling stopped — manual confirmation fallback */
               <>
                 <Button
                   onClick={() => onPaid(lightningAddress.trim())}
                   className="w-full bg-primary text-primary-foreground font-pixel text-xs hover:bg-primary/90 h-12"
                 >
-                  I PAID &mdash; START GAME
+                  I PAID — START GAME
                 </Button>
                 <p className="text-[10px] text-center text-muted-foreground/50">
                   Scan with any Lightning wallet, then confirm above
