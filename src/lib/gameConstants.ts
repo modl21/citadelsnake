@@ -17,16 +17,22 @@ export const BULLET_COOLDOWN = 250; // ms between shots
 // Enemies
 export const ENEMY_WIDTH = 30;
 export const ENEMY_HEIGHT = 24;
-export const ENEMY_ROWS = 4;
 export const ENEMY_COLS = 8;
 export const ENEMY_H_SPACING = 44;
 export const ENEMY_V_SPACING = 38;
 export const ENEMY_START_Y = 40;
-export const ENEMY_SPEED_BASE = 0.6;
-export const ENEMY_SPEED_INCREMENT = 0.1; // per wave
-export const ENEMY_DROP_AMOUNT = 20;
-export const ENEMY_BULLET_SPEED = 4;
-export const ENEMY_SHOOT_CHANCE = 0.003; // per enemy per frame
+export const ENEMY_DROP_AMOUNT = 16;
+export const ENEMY_BULLET_SPEED = 3.5;
+
+// Difficulty curve
+export const WAVE_0_ROWS = 2;         // start with just 2 rows
+export const MAX_ROWS = 5;            // grow to 5 rows by wave 6+
+export const SPEED_BASE = 0.25;       // very slow at start
+export const SPEED_WAVE_SCALE = 0.06; // small bump per wave
+export const SPEED_KILL_SCALE = 1.8;  // speed multiplier when few enemies left
+export const SHOOT_BASE = 0.0005;     // very rare shooting at start
+export const SHOOT_WAVE_SCALE = 0.0003; // more shooting per wave
+export const SHOOT_KILL_SCALE = 1.5;  // shoot more when fewer enemies remain
 
 // Scoring
 export const SCORE_PER_ENEMY = 10;
@@ -39,6 +45,7 @@ export const COLOR_ENEMY_1 = '#ef4444';
 export const COLOR_ENEMY_2 = '#f97316';
 export const COLOR_ENEMY_3 = '#a855f7';
 export const COLOR_ENEMY_4 = '#06b6d4';
+export const COLOR_ENEMY_5 = '#ec4899';
 export const COLOR_ENEMY_BULLET = '#ef4444';
 export const COLOR_STARS = '#ffffff';
 export const COLOR_BG = '#0a0a0f';

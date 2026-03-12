@@ -8,11 +8,12 @@ import {
   COLOR_ENEMY_2,
   COLOR_ENEMY_3,
   COLOR_ENEMY_4,
+  COLOR_ENEMY_5,
   COLOR_ENEMY_BULLET,
   COLOR_BG,
 } from './gameConstants';
 
-const ENEMY_COLORS = [COLOR_ENEMY_1, COLOR_ENEMY_2, COLOR_ENEMY_3, COLOR_ENEMY_4];
+const ENEMY_COLORS = [COLOR_ENEMY_1, COLOR_ENEMY_2, COLOR_ENEMY_3, COLOR_ENEMY_4, COLOR_ENEMY_5];
 
 function drawPixelShip(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, color: string) {
   ctx.fillStyle = color;

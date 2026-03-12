@@ -12,19 +12,29 @@ import {
   BULLET_COOLDOWN,
   ENEMY_WIDTH,
   ENEMY_HEIGHT,
-  ENEMY_ROWS,
   ENEMY_COLS,
   ENEMY_H_SPACING,
   ENEMY_V_SPACING,
   ENEMY_START_Y,
-  ENEMY_SPEED_BASE,
-  ENEMY_SPEED_INCREMENT,
   ENEMY_DROP_AMOUNT,
   ENEMY_BULLET_SPEED,
-  ENEMY_SHOOT_CHANCE,
+  WAVE_0_ROWS,
+  MAX_ROWS,
+  SPEED_BASE,
+  SPEED_WAVE_SCALE,
+  SPEED_KILL_SCALE,
+  SHOOT_BASE,
+  SHOOT_WAVE_SCALE,
+  SHOOT_KILL_SCALE,
   SCORE_PER_ENEMY,
   SCORE_PER_WAVE_BONUS,
 } from './gameConstants';
+
+/** How many rows of enemies for a given wave number */
+function getRowsForWave(wave: number): number {
+  // Wave 0: 2 rows, wave 1: 2, wave 2: 3, wave 3: 3, wave 4: 4, wave 5: 4, wave 6+: 5
+  return Math.min(WAVE_0_ROWS + Math.floor(wave / 2), MAX_ROWS);
+}
 
 export function createInitialState(): GameState {
   return {
@@ -63,18 +73,19 @@ function createStarfield(): Star[] {
 }
 
 function createEnemyWave(wave: number): Enemy[] {
+  const rows = getRowsForWave(wave);
   const enemies: Enemy[] = [];
   const offsetX = (GAME_WIDTH - ENEMY_COLS * ENEMY_H_SPACING) / 2 + (ENEMY_H_SPACING - ENEMY_WIDTH) / 2;
-  
-  for (let row = 0; row < ENEMY_ROWS; row++) {
+
+  for (let row = 0; row < rows; row++) {
     for (let col = 0; col < ENEMY_COLS; col++) {
       enemies.push({
         x: offsetX + col * ENEMY_H_SPACING,
-        y: ENEMY_START_Y + row * ENEMY_V_SPACING - (wave > 0 ? 0 : 0),
+        y: ENEMY_START_Y + row * ENEMY_V_SPACING,
         width: ENEMY_WIDTH,
         height: ENEMY_HEIGHT,
         alive: true,
-        type: row,
+        type: row % 5,
       });
     }
   }
@@ -116,7 +127,24 @@ export function updateGame(
   if (state.gameOver) return state;
 
   const newState = { ...state };
-  
+
+  // --- Difficulty scaling ---
+  const totalEnemies = state.enemies.length;
+  const aliveEnemies = state.enemies.filter((e) => e.alive);
+  const aliveCount = aliveEnemies.length;
+  // killRatio goes from 0 (all alive) to ~1 (almost all dead)
+  const killRatio = totalEnemies > 0 ? 1 - aliveCount / totalEnemies : 0;
+
+  // Enemy movement speed: base + wave bonus, scaled up as enemies die
+  const waveSpeed = SPEED_BASE + state.wave * SPEED_WAVE_SCALE;
+  const speedMultiplier = 1 + killRatio * (SPEED_KILL_SCALE - 1);
+  const speed = waveSpeed * speedMultiplier;
+
+  // Enemy shoot chance: base + wave bonus, scaled up as enemies die
+  const waveShoot = SHOOT_BASE + state.wave * SHOOT_WAVE_SCALE;
+  const shootMultiplier = 1 + killRatio * (SHOOT_KILL_SCALE - 1);
+  const shootChance = waveShoot * shootMultiplier;
+
   // Update stars (parallax background)
   newState.stars = state.stars.map((star) => ({
     ...star,
@@ -156,12 +184,9 @@ export function updateGame(
     .filter((b) => b.y < GAME_HEIGHT);
 
   // Move enemies
-  const speed = ENEMY_SPEED_BASE + state.wave * ENEMY_SPEED_INCREMENT;
-  const aliveEnemies = state.enemies.filter((e) => e.alive);
-  
   let shouldDrop = false;
   let newDirection = state.enemyDirection;
-  
+
   for (const enemy of aliveEnemies) {
     const nextX = enemy.x + speed * state.enemyDirection;
     if (nextX <= 0 || nextX + enemy.width >= GAME_WIDTH) {
@@ -181,10 +206,10 @@ export function updateGame(
   });
   newState.enemyDirection = newDirection;
 
-  // Enemy shooting
+  // Enemy shooting — uses dynamic shoot chance
   const newEnemyBullets = [...newState.enemyBullets];
   for (const enemy of newState.enemies) {
-    if (enemy.alive && Math.random() < ENEMY_SHOOT_CHANCE) {
+    if (enemy.alive && Math.random() < shootChance) {
       newEnemyBullets.push({
         x: enemy.x + enemy.width / 2 - BULLET_WIDTH / 2,
         y: enemy.y + enemy.height,
@@ -203,7 +228,7 @@ export function updateGame(
       x: p.x + p.vx,
       y: p.y + p.vy,
       life: p.life - 0.03,
-      vy: p.vy + 0.02, // gravity
+      vy: p.vy + 0.02,
     }))
     .filter((p) => p.life > 0);
 
@@ -232,8 +257,7 @@ export function updateGame(
         hit = true;
         scoreGain += SCORE_PER_ENEMY;
 
-        // Explosion particles
-        const colors = ['#ef4444', '#f97316', '#fbbf24', '#ffffff'];
+        const colors = ['#ef4444', '#f97316', '#fbbf24', '#a855f7', '#ec4899'];
         newParticles = [
           ...newParticles,
           ...createExplosion(
