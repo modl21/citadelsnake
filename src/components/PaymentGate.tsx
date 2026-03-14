@@ -81,27 +81,37 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
       onPaid(address, gameInvoice);
     };
 
-    const sinceTimestamp = Math.floor(Date.now() / 1000) - 60;
+    const sinceTimestamp = Math.floor(Date.now() / 1000) - 90;
     const recipientPubkey = gameInvoice.recipientLnurlPubkey!;
+    const senderPubkey = gameInvoice.senderPubkey;
     const zapRequestId = gameInvoice.zapRequest!.id;
     const bolt11 = gameInvoice.bolt11;
 
-    // Filter zap receipts by the recipient's p tag — this is indexed by relays
-    // so it's efficient and won't return unrelated zap receipts
-    const filter = [{
-      kinds: [9735],
-      '#p': [recipientPubkey],
-      since: sinceTimestamp,
-      limit: 20,
-    }];
+    // Query strategy for primal zap receipts:
+    // 1) strict filter with both recipient (#p) and sender (#P) when available
+    // 2) fallback filter with recipient only (#p)
+    const filters = senderPubkey
+      ? [
+          { kinds: [9735], '#p': [recipientPubkey], '#P': [senderPubkey], since: sinceTimestamp, limit: 30 },
+          { kinds: [9735], '#p': [recipientPubkey], since: sinceTimestamp, limit: 80 },
+        ]
+      : [
+          { kinds: [9735], '#p': [recipientPubkey], since: sinceTimestamp, limit: 80 },
+        ];
 
     async function poll() {
       if (!activeRef.current) return;
 
       try {
-        const events = await nostr.query(filter, { signal: AbortSignal.timeout(8000) });
+        // Query both default relay pool + primal relay directly for fastest detection
+        const [poolEvents, primalEvents] = await Promise.all([
+          nostr.query(filters, { signal: AbortSignal.timeout(8000) }),
+          nostr.relay('wss://relay.primal.net').query(filters, { signal: AbortSignal.timeout(8000) }),
+        ]);
 
-        for (const event of events) {
+        const allEvents = [...poolEvents, ...primalEvents];
+
+        for (const event of allEvents) {
           // Match 1: bolt11 tag matches our invoice exactly
           const bolt11Tag = event.tags.find(([n]) => n === 'bolt11')?.[1];
           if (bolt11Tag === bolt11) {
@@ -254,7 +264,7 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
               ) : (
                 <Zap className="size-4 mr-2" />
               )}
-              {loading ? 'GENERATING INVOICE...' : `PAY ${PAYMENT_AMOUNT_SATS} SATS`}
+              {loading ? 'GENERATING INVOICE...' : `ZAP ${PAYMENT_AMOUNT_SATS} SATS`}
             </Button>
           </div>
         )}
@@ -296,9 +306,9 @@ export function PaymentGate({ open, onPaid, onClose }: PaymentGateProps) {
                   {verifying ? 'WAITING FOR PAYMENT...' : 'PREPARING...'}
                 </span>
               </div>
-              <p className="text-[10px] text-center text-muted-foreground/50">
-                Pay the invoice — the game starts automatically once confirmed
-              </p>
+                <p className="text-[10px] text-center text-muted-foreground/50">
+                  Zap the invoice — the game starts automatically once confirmed
+                </p>
             </div>
           </div>
         )}

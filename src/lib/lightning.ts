@@ -105,6 +105,7 @@ export async function getGameInvoice(relays: string[]): Promise<GameInvoice> {
       ['relays', ...relays],
       ['amount', String(amountMsat)],
       ['p', recipientPubkey],
+      ['P', senderPubkey],
     ],
     created_at: Math.floor(Date.now() / 1000),
   };
