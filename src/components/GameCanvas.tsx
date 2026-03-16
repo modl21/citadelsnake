@@ -8,11 +8,12 @@ import type { GameState } from '@/lib/gameTypes';
 interface GameCanvasProps {
   onGameOver: (score: number) => void;
   isPlaying: boolean;
+  isMobile: boolean;
   /** Shared ref so external touch controls can drive input */
   keysRef: React.MutableRefObject<{ left: boolean; right: boolean; shoot: boolean }>;
 }
 
-export function GameCanvas({ onGameOver, isPlaying, keysRef }: GameCanvasProps) {
+export function GameCanvas({ onGameOver, isPlaying, isMobile, keysRef }: GameCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameStateRef = useRef<GameState>(createInitialState());
   const frameRef = useRef(0);
@@ -20,11 +21,15 @@ export function GameCanvas({ onGameOver, isPlaying, keysRef }: GameCanvasProps) 
   const gameOverCalledRef = useRef(false);
   const [canvasScale, setCanvasScale] = useState(1);
 
-  // Calculate scale to fit screen
+  // Calculate scale to fit screen — reserve space for fixed touch controls on mobile
   useEffect(() => {
     function handleResize() {
       const maxW = Math.min(window.innerWidth - 16, 500);
-      const maxH = window.innerHeight - 280; // extra room for touch controls
+      // When playing on mobile, reserve 130px at the bottom for touch controls
+      // Title/header takes ~120px at the top
+      const reserveBottom = isMobile ? 130 : 0;
+      const reserveTop = 120;
+      const maxH = window.innerHeight - reserveTop - reserveBottom;
       const scaleW = maxW / GAME_WIDTH;
       const scaleH = maxH / GAME_HEIGHT;
       setCanvasScale(Math.min(scaleW, scaleH, 1.5));
@@ -32,7 +37,7 @@ export function GameCanvas({ onGameOver, isPlaying, keysRef }: GameCanvasProps) 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [isMobile]);
 
   // Reset game when isPlaying changes to true
   useEffect(() => {

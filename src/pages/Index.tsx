@@ -143,6 +143,7 @@ const Index = () => {
           <GameCanvas
             onGameOver={handleGameOver}
             isPlaying={phase === 'playing'}
+            isMobile={isMobile}
             keysRef={keysRef}
           />
 

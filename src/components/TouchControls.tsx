@@ -27,9 +27,7 @@ export function TouchControls({ keysRef }: TouchControlsProps) {
   }, [keysRef]);
 
   const startShoot = useCallback(() => {
-    // Fire immediately
     keysRef.current.shoot = true;
-    // Keep firing while held
     shootTimerRef.current = setInterval(() => {
       keysRef.current.shoot = true;
       setTimeout(() => { keysRef.current.shoot = false; }, 50);
@@ -45,32 +43,29 @@ export function TouchControls({ keysRef }: TouchControlsProps) {
   }, [keysRef]);
 
   return (
-    <div className="w-full max-w-md mx-auto flex items-center justify-between px-2 select-none" style={{ touchAction: 'none' }}>
+    <div
+      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-between px-5 pb-6 pt-3 select-none bg-gradient-to-t from-black/80 to-transparent"
+      style={{ touchAction: 'none' }}
+    >
       {/* Left side: directional buttons */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           onTouchStart={(e) => { e.preventDefault(); startLeft(); }}
           onTouchEnd={(e) => { e.preventDefault(); stopLeft(); }}
           onTouchCancel={stopLeft}
-          onMouseDown={startLeft}
-          onMouseUp={stopLeft}
-          onMouseLeave={stopLeft}
-          className="size-16 rounded-2xl bg-white/5 border border-white/10 active:bg-primary/20 active:border-primary/40 flex items-center justify-center transition-colors"
+          className="size-[72px] rounded-2xl bg-white/10 border border-white/20 active:bg-primary/30 active:border-primary/50 flex items-center justify-center"
           aria-label="Move left"
         >
-          <ChevronLeft className="size-8 text-white/60" />
+          <ChevronLeft className="size-10 text-white/70" />
         </button>
         <button
           onTouchStart={(e) => { e.preventDefault(); startRight(); }}
           onTouchEnd={(e) => { e.preventDefault(); stopRight(); }}
           onTouchCancel={stopRight}
-          onMouseDown={startRight}
-          onMouseUp={stopRight}
-          onMouseLeave={stopRight}
-          className="size-16 rounded-2xl bg-white/5 border border-white/10 active:bg-primary/20 active:border-primary/40 flex items-center justify-center transition-colors"
+          className="size-[72px] rounded-2xl bg-white/10 border border-white/20 active:bg-primary/30 active:border-primary/50 flex items-center justify-center"
           aria-label="Move right"
         >
-          <ChevronRight className="size-8 text-white/60" />
+          <ChevronRight className="size-10 text-white/70" />
         </button>
       </div>
 
@@ -79,13 +74,10 @@ export function TouchControls({ keysRef }: TouchControlsProps) {
         onTouchStart={(e) => { e.preventDefault(); startShoot(); }}
         onTouchEnd={(e) => { e.preventDefault(); stopShoot(); }}
         onTouchCancel={stopShoot}
-        onMouseDown={startShoot}
-        onMouseUp={stopShoot}
-        onMouseLeave={stopShoot}
-        className="size-20 rounded-full bg-destructive/10 border-2 border-destructive/30 active:bg-destructive/30 active:border-destructive/60 flex items-center justify-center transition-colors"
+        className="size-[88px] rounded-full bg-destructive/20 border-2 border-destructive/40 active:bg-destructive/40 active:border-destructive/70 flex items-center justify-center"
         aria-label="Fire"
       >
-        <Crosshair className="size-9 text-destructive/80" />
+        <Crosshair className="size-11 text-destructive" />
       </button>
     </div>
   );
