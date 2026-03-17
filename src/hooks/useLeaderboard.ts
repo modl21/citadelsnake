@@ -2,14 +2,14 @@ import { useNostr } from '@nostrify/react';
 import { useQuery } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 
-import { GAME_SCORE_KIND, GAME_ID } from '@/lib/gameConstants';
+import { GAME_SCORE_KIND, GAME_TAG } from '@/lib/gameConstants';
 import { getCurrentWeekStart, getCurrentWeekEnd, getPreviousWeekStart, getPreviousWeekEnd } from '@/lib/weekUtils';
 import type { LeaderboardEntry, WeeklyWinner } from '@/lib/gameTypes';
 
 function eventToEntry(event: NostrEvent): LeaderboardEntry | null {
   const scoreTag = event.tags.find(([name]) => name === 'score')?.[1];
   const lightningTag = event.tags.find(([name]) => name === 'lightning')?.[1];
-  const gameTag = event.tags.find(([name, value]) => name === 'game' && value === GAME_ID);
+  const gameTag = event.tags.find(([name, value]) => name === 't' && value === GAME_TAG);
 
   if (!scoreTag || !lightningTag || !gameTag) return null;
 
@@ -34,7 +34,7 @@ export function useCurrentWeekLeaderboard() {
     queryFn: async () => {
       const events = await nostr.query([{
         kinds: [GAME_SCORE_KIND],
-        '#game': [GAME_ID],
+        '#t': [GAME_TAG],
         since: weekStart,
         until: weekEnd,
         limit: 400,
@@ -72,7 +72,7 @@ export function usePreviousWeekWinner() {
     queryFn: async () => {
       const events = await nostr.query([{
         kinds: [GAME_SCORE_KIND],
-        '#game': [GAME_ID],
+        '#t': [GAME_TAG],
         since: prevStart,
         until: prevEnd,
         limit: 400,
@@ -119,7 +119,7 @@ export function useAllTimePlayCount() {
       // Query a generous window from genesis; this is still bounded by relay retention.
       const events = await nostr.query([{
         kinds: [GAME_SCORE_KIND],
-        '#game': [GAME_ID],
+        '#t': [GAME_TAG],
         limit: 10000,
       }]);
 

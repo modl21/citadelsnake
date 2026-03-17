@@ -47,6 +47,6 @@ export const COLOR_HORIZON = '#ff4500';        // Sunset orange
 export const PAYMENT_AMOUNT_SATS = 100;
 export const PAYMENT_RECIPIENT = 'claw@primal.net';
 
-// Nostr — Gamestr kind 30762 (addressable event for game scores)
-export const GAME_SCORE_KIND = 30762;
-export const GAME_ID = 'citadel-snake';
+// Nostr
+export const GAME_SCORE_KIND = 1151;
+export const GAME_TAG = 'citadel-snake';

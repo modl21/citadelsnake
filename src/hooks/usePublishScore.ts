@@ -2,7 +2,7 @@ import { useNostr } from '@nostrify/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 
-import { GAME_SCORE_KIND, GAME_ID } from '@/lib/gameConstants';
+import { GAME_SCORE_KIND, GAME_TAG } from '@/lib/gameConstants';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
 import type { LeaderboardEntry } from '@/lib/gameTypes';
 
@@ -11,7 +11,6 @@ interface PublishScoreParams {
   lightning: string;
   signer: {
     signEvent(event: Omit<NostrEvent, 'id' | 'pubkey' | 'sig'>): Promise<NostrEvent>;
-    getPublicKey(): Promise<string>;
   };
 }
 
@@ -21,21 +20,16 @@ export function usePublishScore() {
 
   return useMutation({
     mutationFn: async ({ score, lightning, signer }: PublishScoreParams) => {
-      const playerPubkey = await signer.getPublicKey();
       const sessionId = crypto.randomUUID();
-
-      // Gamestr kind 30762 schema (addressable event)
-      // d tag format: "game-id:player-pubkey:session-id"
-      const dTag = `${GAME_ID}:${playerPubkey}:${sessionId}`;
 
       const event = await signer.signEvent({
         kind: GAME_SCORE_KIND,
         content: '',
         tags: [
-          ['d', dTag],
-          ['game', GAME_ID],
+          ['d', sessionId],
           ['score', String(score)],
           ['lightning', lightning],
+          ['t', GAME_TAG],
           ['alt', 'Citadel Snake game score'],
         ],
         created_at: Math.floor(Date.now() / 1000),
@@ -49,8 +43,6 @@ export function usePublishScore() {
       const leaderboardKey = ['leaderboard', 'current', weekStart];
 
       // Optimistically inject the new score into the leaderboard cache.
-      // The relay may not have indexed the event yet, so waiting for a
-      // refetch would return stale data missing this score.
       const newEntry: LeaderboardEntry = {
         lightning,
         score,
@@ -79,7 +71,6 @@ export function usePublishScore() {
       queryClient.setQueryData<number>(['leaderboard', 'all-time-play-count'], (old) => (old ?? 0) + 1);
 
       // After a short delay, refetch from the relay for authoritative data.
-      // This gives the relay time to index the event before we query again.
       setTimeout(() => {
         queryClient.invalidateQueries({ queryKey: leaderboardKey });
         queryClient.invalidateQueries({ queryKey: ['leaderboard', 'all-time-play-count'] });
