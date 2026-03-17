@@ -19,14 +19,19 @@ import type { GameInvoice } from '@/lib/lightning';
 const Index = () => {
   useSeoMeta({
     title: 'Citadel Snake - Pay Sats. Eat Rats. Survive the Wasteland.',
-    description: 'A post-apocalyptic western snake game powered by Bitcoin Lightning. Pay 100 sats for one life, grow your rattlesnake, and claim glory on the Nostr-powered leaderboard.',
+    description: 'Slither through the wild frontier.',
     ogTitle: 'Citadel Snake',
-    ogDescription: '100 Sats. One Life. Weekly Leaderboard.',
+    ogDescription: 'Slither through the wild frontier.',
     ogType: 'website',
     ogSiteName: 'Citadel Snake',
+    ogUrl: 'https://citadelsnake.com',
+    ogImage: 'https://blossom.ditto.pub/60db7a932ef2cd77b2328739c6e7efb4a1cfd44b9b7a41575bab054b50e01199.jpeg',
+    ogImageWidth: 1792,
+    ogImageHeight: 768,
     twitterCard: 'summary_large_image',
-    twitterTitle: 'Citadel Snake', 
-    twitterDescription: '100 Sats. One Life. Weekly Leaderboard.',
+    twitterTitle: 'Citadel Snake',
+    twitterDescription: 'Slither through the wild frontier.',
+    twitterImage: 'https://blossom.ditto.pub/60db7a932ef2cd77b2328739c6e7efb4a1cfd44b9b7a41575bab054b50e01199.jpeg',
   });
 
   const isMobile = useIsMobile();
