@@ -4,6 +4,7 @@ import type { NostrEvent } from '@nostrify/nostrify';
 
 import { GAME_SCORE_KIND, GAME_ID } from '@/lib/gameConstants';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
+import type { LeaderboardEntry } from '@/lib/gameTypes';
 
 interface PublishScoreParams {
   score: number;
@@ -43,9 +44,46 @@ export function usePublishScore() {
       await nostr.event(event, { signal: AbortSignal.timeout(5000) });
       return event;
     },
-    onSuccess: () => {
+    onSuccess: (event, { score, lightning }) => {
       const weekStart = getCurrentWeekStart();
-      queryClient.invalidateQueries({ queryKey: ['leaderboard', 'current', weekStart] });
+      const leaderboardKey = ['leaderboard', 'current', weekStart];
+
+      // Optimistically inject the new score into the leaderboard cache.
+      // The relay may not have indexed the event yet, so waiting for a
+      // refetch would return stale data missing this score.
+      const newEntry: LeaderboardEntry = {
+        lightning,
+        score,
+        timestamp: event.created_at,
+        eventId: event.id,
+      };
+
+      queryClient.setQueryData<LeaderboardEntry[]>(leaderboardKey, (old) => {
+        const current = old ?? [];
+
+        // Merge new entry and re-derive top 10 unique by lightning address
+        const merged = [...current, newEntry].sort((a, b) => b.score - a.score);
+        const seen = new Set<string>();
+        const top10: LeaderboardEntry[] = [];
+        for (const entry of merged) {
+          if (!seen.has(entry.lightning)) {
+            seen.add(entry.lightning);
+            top10.push(entry);
+            if (top10.length >= 10) break;
+          }
+        }
+        return top10;
+      });
+
+      // Optimistically bump the all-time play count
+      queryClient.setQueryData<number>(['leaderboard', 'all-time-play-count'], (old) => (old ?? 0) + 1);
+
+      // After a short delay, refetch from the relay for authoritative data.
+      // This gives the relay time to index the event before we query again.
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: leaderboardKey });
+        queryClient.invalidateQueries({ queryKey: ['leaderboard', 'all-time-play-count'] });
+      }, 3000);
     },
     onError: (error) => {
       console.error('Failed to publish score:', error);
