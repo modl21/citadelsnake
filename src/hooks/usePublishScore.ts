@@ -2,7 +2,7 @@ import { useNostr } from '@nostrify/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NostrEvent } from '@nostrify/nostrify';
 
-import { GAME_SCORE_KIND, GAME_TAG } from '@/lib/gameConstants';
+import { GAME_SCORE_KIND, GAME_ID } from '@/lib/gameConstants';
 import { getCurrentWeekStart } from '@/lib/weekUtils';
 
 interface PublishScoreParams {
@@ -10,6 +10,7 @@ interface PublishScoreParams {
   lightning: string;
   signer: {
     signEvent(event: Omit<NostrEvent, 'id' | 'pubkey' | 'sig'>): Promise<NostrEvent>;
+    getPublicKey(): Promise<string>;
   };
 }
 
@@ -19,16 +20,21 @@ export function usePublishScore() {
 
   return useMutation({
     mutationFn: async ({ score, lightning, signer }: PublishScoreParams) => {
+      const playerPubkey = await signer.getPublicKey();
       const sessionId = crypto.randomUUID();
+
+      // Gamestr kind 30762 schema (addressable event)
+      // d tag format: "game-id:player-pubkey:session-id"
+      const dTag = `${GAME_ID}:${playerPubkey}:${sessionId}`;
 
       const event = await signer.signEvent({
         kind: GAME_SCORE_KIND,
         content: '',
         tags: [
-          ['d', sessionId],
+          ['d', dTag],
+          ['game', GAME_ID],
           ['score', String(score)],
           ['lightning', lightning],
-          ['t', GAME_TAG],
           ['alt', 'Citadel Snake game score'],
         ],
         created_at: Math.floor(Date.now() / 1000),
