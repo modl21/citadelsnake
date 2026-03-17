@@ -97,6 +97,7 @@ export function GameCanvas({ onGameOver, isPlaying, isMobile, keysRef }: GameCan
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = true;
 
     // Check touch controls once per frame
     if (keysRef.current) {
@@ -140,6 +141,7 @@ export function GameCanvas({ onGameOver, isPlaying, isMobile, keysRef }: GameCan
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    ctx.imageSmoothingEnabled = true;
 
     let frame = 0;
     // We keep a consistent idle state so tumbleweeds don't reset every frame
@@ -180,7 +182,7 @@ export function GameCanvas({ onGameOver, isPlaying, isMobile, keysRef }: GameCan
       style={{
         width: `${GAME_WIDTH * canvasScale}px`,
         height: `${GAME_HEIGHT * canvasScale}px`,
-        imageRendering: 'pixelated',
+        imageRendering: 'auto',
       }}
     />
   );

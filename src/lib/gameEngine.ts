@@ -108,22 +108,35 @@ function spawnFood(state: GameState): void {
 
 function createDustExplosion(x: number, y: number, color: string): DustParticle[] {
   const particles: DustParticle[] = [];
-  const count = 6 + Math.floor(Math.random() * 4);
+  const count = 10 + Math.floor(Math.random() * 6);
   for (let i = 0; i < count; i++) {
-    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
-    const speed = Math.random() * 2 + 0.5;
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.6;
+    const speed = Math.random() * 2.8 + 0.6;
     particles.push({
       x: x * 16 + 8,
       y: y * 16 + 8,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
+      vy: Math.sin(angle) * speed - Math.random() * 0.4,
       life: 1,
       maxLife: 1,
       color,
-      size: Math.random() * 3 + 1,
+      size: Math.random() * 3.5 + 1,
     });
   }
   return particles;
+}
+
+function createSnakeTrailParticle(x: number, y: number): DustParticle {
+  return {
+    x: x * 16 + 8 + (Math.random() - 0.5) * 3,
+    y: y * 16 + 8 + (Math.random() - 0.5) * 3,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: -Math.random() * 0.25,
+    life: 0.45 + Math.random() * 0.15,
+    maxLife: 0.6,
+    color: Math.random() > 0.5 ? '#7a5a34' : '#c4a882',
+    size: Math.random() * 2.2 + 0.6,
+  };
 }
 
 function oppositeDirection(dir: Direction): Direction {
@@ -162,10 +175,12 @@ export function updateGame(state: GameState): GameState {
       ...p,
       x: p.x + p.vx,
       y: p.y + p.vy,
-      life: p.life - 0.04,
-      vy: p.vy + 0.01,
+      life: p.life - 0.03,
+      vx: p.vx * 0.985,
+      vy: p.vy + 0.008,
+      size: p.size * 0.992,
     }))
-    .filter((p) => p.life > 0);
+    .filter((p) => p.life > 0 && p.size > 0.2);
 
   // Reduce screen shake
   newState.screenShake = Math.max(0, (state.screenShake || 0) - 0.5);
@@ -220,6 +235,12 @@ export function updateGame(state: GameState): GameState {
   // Move snake
   const newHead: SnakeSegment = { x: newX, y: newY };
   const newSnake = [newHead, ...state.snake];
+
+  // Add subtle dust trail from the tail for extra atmosphere
+  const tail = state.snake[state.snake.length - 1];
+  if (tail && Math.random() < 0.65) {
+    newState.dustParticles = [...newState.dustParticles, createSnakeTrailParticle(tail.x, tail.y)];
+  }
 
   // Check food collision
   let ate = false;
