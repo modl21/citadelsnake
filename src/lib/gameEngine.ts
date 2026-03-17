@@ -73,11 +73,10 @@ function isOccupied(x: number, y: number, snake: SnakeSegment[], food: Food[]): 
 }
 
 function getRandomEmptyCell(snake: SnakeSegment[], food: Food[]): { x: number; y: number } | null {
-  // Margin of 1 from walls
   const attempts = 100;
   for (let i = 0; i < attempts; i++) {
-    const x = Math.floor(Math.random() * (GRID_WIDTH - 2)) + 1;
-    const y = Math.floor(Math.random() * (GRID_HEIGHT - 2)) + 1;
+    const x = Math.floor(Math.random() * GRID_WIDTH);
+    const y = Math.floor(Math.random() * GRID_HEIGHT);
     if (!isOccupied(x, y, snake, food)) {
       return { x, y };
     }
@@ -198,17 +197,11 @@ export function updateGame(state: GameState): GameState {
     case 'right': newX += 1; break;
   }
 
-  // Check wall collision
-  if (newX < 0 || newX >= GRID_WIDTH || newY < 0 || newY >= GRID_HEIGHT) {
-    newState.gameOver = true;
-    newState.dustParticles = [
-      ...newState.dustParticles,
-      ...createDustExplosion(head.x, head.y, '#c4813d'),
-      ...createDustExplosion(head.x, head.y, '#ff4500'),
-    ];
-    newState.screenShake = 8;
-    return newState;
-  }
+  // Wrap around walls (toroidal movement)
+  if (newX < 0) newX = GRID_WIDTH - 1;
+  else if (newX >= GRID_WIDTH) newX = 0;
+  if (newY < 0) newY = GRID_HEIGHT - 1;
+  else if (newY >= GRID_HEIGHT) newY = 0;
 
   // Check self collision
   for (let i = 0; i < state.snake.length; i++) {
