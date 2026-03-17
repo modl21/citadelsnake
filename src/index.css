@@ -4,82 +4,95 @@
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Refined Western Palette */
+    --background: 24 12% 4%;
+    --foreground: 36 50% 88%;
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 24 12% 6%;
+    --card-foreground: 36 50% 88%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 24 12% 6%;
+    --popover-foreground: 36 50% 88%;
 
-    --primary: 142 71% 45%;
-    --primary-foreground: 240 10% 3.9%;
+    --primary: 32 65% 50%;
+    --primary-foreground: 24 12% 4%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 24 10% 14%;
+    --secondary-foreground: 36 50% 88%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 24 10% 14%;
+    --muted-foreground: 30 15% 45%;
 
-    --accent: 47 100% 50%;
-    --accent-foreground: 240 10% 3.9%;
+    --accent: 42 100% 50%;
+    --accent-foreground: 24 12% 4%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142 71% 45%;
+    --border: 24 15% 16%;
+    --input: 24 15% 16%;
+    --ring: 32 65% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 71% 45%;
+    --sidebar-background: 24 12% 7%;
+    --sidebar-foreground: 36 40% 90%;
+    --sidebar-primary: 32 65% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-accent: 24 10% 14%;
+    --sidebar-accent-foreground: 36 40% 90%;
+    --sidebar-border: 24 15% 16%;
+    --sidebar-ring: 32 65% 50%;
+
+    /* Game-specific tokens */
+    --game-bg: #0a0502;
+    --game-sand: #eecfa1;
+    --game-copper: #c4813d;
+    --game-rust: #8b4513;
+    --game-gold: #ffd700;
+    --game-blood: #8b0000;
+    --game-dark: #1a0f0a;
+    --game-deep: #2c1e16;
+    --game-bone: #c4a882;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 24 12% 4%;
+    --foreground: 36 50% 88%;
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 24 12% 6%;
+    --card-foreground: 36 50% 88%;
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 24 12% 6%;
+    --popover-foreground: 36 50% 88%;
 
-    --primary: 142 71% 45%;
-    --primary-foreground: 240 10% 3.9%;
+    --primary: 32 65% 50%;
+    --primary-foreground: 24 12% 4%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 24 10% 14%;
+    --secondary-foreground: 36 50% 88%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 24 10% 14%;
+    --muted-foreground: 30 15% 45%;
 
-    --accent: 47 100% 50%;
-    --accent-foreground: 240 10% 3.9%;
+    --accent: 42 100% 50%;
+    --accent-foreground: 24 12% 4%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142 71% 45%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 142 71% 45%;
+    --border: 24 15% 16%;
+    --input: 24 15% 16%;
+    --ring: 32 65% 50%;
+
+    --sidebar-background: 24 12% 7%;
+    --sidebar-foreground: 36 40% 90%;
+    --sidebar-primary: 32 65% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-accent: 24 10% 14%;
+    --sidebar-accent-foreground: 36 40% 90%;
+    --sidebar-border: 24 15% 16%;
+    --sidebar-ring: 32 65% 50%;
   }
 }
 
@@ -97,25 +110,28 @@
   }
 }
 
-/* Retro scanline effect */
+/* ========================================
+   ANIMATIONS
+   ======================================== */
+
 @keyframes scanline {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.5; }
+  0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
 }
 
 @keyframes flicker {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.95; }
+  50% { opacity: 0.97; }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-6px); }
 }
 
 @keyframes shake {
@@ -127,51 +143,241 @@
   50% { transform: translateX(0); }
 }
 
+@keyframes ember-rise {
+  0% { transform: translateY(0) scale(1); opacity: 0.8; }
+  100% { transform: translateY(-60px) scale(0.3); opacity: 0; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fade-in-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(196, 129, 61, 0.1), 0 0 40px rgba(196, 129, 61, 0.05); }
+  50% { box-shadow: 0 0 30px rgba(196, 129, 61, 0.2), 0 0 60px rgba(196, 129, 61, 0.1); }
+}
+
+@keyframes slide-in-right {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes count-up {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(196, 129, 61, 0.3); }
+  50% { border-color: rgba(196, 129, 61, 0.6); }
+}
+
 .animate-scanline {
-  animation: scanline 8s linear infinite;
+  animation: scanline 10s linear infinite;
 }
 
 .animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
+  animation: pulse-glow 3s ease-in-out infinite;
 }
 
 .animate-flicker {
-  animation: flicker 0.1s ease-in-out infinite;
+  animation: flicker 0.15s ease-in-out infinite;
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
 }
 
 .animate-shake {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Pixel-perfect rendering for canvas */
+.animate-ember-rise {
+  animation: ember-rise 2s ease-out forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.4s ease-out forwards;
+}
+
+.animate-count-up {
+  animation: count-up 0.6s ease-out forwards;
+}
+
+.animate-border-glow {
+  animation: border-glow 2s ease-in-out infinite;
+}
+
+/* Staggered animation delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+
+/* ========================================
+   NOISE TEXTURE (inline SVG, no external deps)
+   ======================================== */
+
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* ========================================
+   PIXEL-PERFECT RENDERING
+   ======================================== */
+
 canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: hsl(240 10% 3.9%);
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(142 71% 45% / 0.3);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(142 71% 45% / 0.5);
-}
+/* ========================================
+   GAME CANVAS
+   ======================================== */
 
-/* Prevent touch actions on game canvas */
 .game-canvas {
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* Premium game frame */
+.game-frame {
+  position: relative;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #2c1e16, #1a0f0a);
+  padding: 3px;
+  box-shadow:
+    0 0 0 1px rgba(139, 69, 19, 0.4),
+    0 0 30px rgba(196, 129, 61, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(196, 129, 61, 0.1);
+}
+
+.game-frame::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, rgba(196, 129, 61, 0.3), transparent 40%, transparent 60%, rgba(139, 69, 19, 0.2));
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ========================================
+   CUSTOM SCROLLBAR
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--game-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(196, 129, 61, 0.2);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(196, 129, 61, 0.4);
+}
+
+/* ========================================
+   GLASS MORPHISM UTILITY
+   ======================================== */
+
+.glass {
+  background: rgba(10, 5, 2, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-subtle {
+  background: rgba(10, 5, 2, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ========================================
+   GRADIENT TEXT
+   ======================================== */
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #ffd700, #c4813d, #d4a854);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-fire {
+  background: linear-gradient(135deg, #ff6b35, #ff4500, #c4813d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ========================================
+   LEADERBOARD ROW RANK COLORS
+   ======================================== */
+
+.rank-gold {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), transparent);
+  border-left: 2px solid rgba(255, 215, 0, 0.4);
+}
+
+.rank-silver {
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.05), transparent);
+  border-left: 2px solid rgba(192, 192, 192, 0.3);
+}
+
+.rank-bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.05), transparent);
+  border-left: 2px solid rgba(205, 127, 50, 0.3);
+}
+
+/* ========================================
+   BUTTON ARCADE STYLE
+   ======================================== */
+
+.btn-arcade {
+  position: relative;
+  transition: all 0.1s ease;
+  transform: translateY(0);
+}
+
+.btn-arcade:active {
+  transform: translateY(3px);
+  box-shadow: none !important;
+}
+
+.btn-arcade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  pointer-events: none;
 }

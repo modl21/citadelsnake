@@ -1,8 +1,8 @@
-# Sats Rattler - Custom Nostr Event Schema
+# Citadel Snake - Custom Nostr Event Schema
 
 ## Kind 1447: Game Score Event
 
-A regular event used to record game scores for the Sats Rattler arcade game.
+A regular event used to record game scores for the Citadel Snake arcade game.
 
 ### Event Structure
 
@@ -15,7 +15,7 @@ A regular event used to record game scores for the Sats Rattler arcade game.
     ["score", "<score-number>"],
     ["lightning", "<lightning-address>"],
     ["t", "citadel-snake"],
-    ["alt", "Sats Rattler game score"]
+    ["alt", "Citadel Snake game score"]
   ]
 }
 ```

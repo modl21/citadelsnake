@@ -7,6 +7,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import App from './App.tsx';
 import './index.css';
 
+import '@fontsource-variable/inter';
 import '@fontsource-variable/space-grotesk';
 import '@fontsource/press-start-2p';
 

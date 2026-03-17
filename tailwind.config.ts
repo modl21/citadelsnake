@@ -66,7 +66,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Game-specific semantic colors
+				game: {
+					bg: '#0a0502',
+					sand: '#eecfa1',
+					copper: '#c4813d',
+					rust: '#8b4513',
+					gold: '#ffd700',
+					blood: '#8b0000',
+					dark: '#1a0f0a',
+					deep: '#2c1e16',
+					bone: '#c4a882',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -75,20 +87,12 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: {
-						height: '0'
-					},
-					to: {
-						height: 'var(--radix-accordion-content-height)'
-					}
+					from: { height: '0' },
+					to: { height: 'var(--radix-accordion-content-height)' }
 				},
 				'accordion-up': {
-					from: {
-						height: 'var(--radix-accordion-content-height)'
-					},
-					to: {
-						height: '0'
-					}
+					from: { height: 'var(--radix-accordion-content-height)' },
+					to: { height: '0' }
 				}
 			},
 			animation: {

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useSeoMeta } from '@unhead/react';
-import { Zap, Gamepad2, Smartphone, Keyboard, Play, Skull } from 'lucide-react';
+import { Zap, Gamepad2, Smartphone, Keyboard, Play } from 'lucide-react';
 import type { NSecSigner } from '@nostrify/nostrify';
 
 import { Button } from '@/components/ui/button';
@@ -18,15 +18,14 @@ import type { GameInvoice } from '@/lib/lightning';
 
 const Index = () => {
   useSeoMeta({
-    title: 'Sats Rattler - Pay Sats. Eat Rats. Survive the Wasteland.',
+    title: 'Citadel Snake - Pay Sats. Eat Rats. Survive the Wasteland.',
     description: 'A post-apocalyptic western snake game powered by Bitcoin Lightning. Pay 100 sats for one life, grow your rattlesnake, and claim glory on the Nostr-powered leaderboard.',
-    ogTitle: 'Sats Rattler',
+    ogTitle: 'Citadel Snake',
     ogDescription: '100 Sats. One Life. Weekly Leaderboard.',
-    // ogImage is set in index.html, but we can override if needed
     ogType: 'website',
-    ogSiteName: 'Sats Rattler',
+    ogSiteName: 'Citadel Snake',
     twitterCard: 'summary_large_image',
-    twitterTitle: 'Sats Rattler', 
+    twitterTitle: 'Citadel Snake', 
     twitterDescription: '100 Sats. One Life. Weekly Leaderboard.',
   });
 
@@ -108,21 +107,28 @@ const Index = () => {
 
       <div className="relative z-10 flex flex-col items-center min-h-full px-4 py-6 gap-6">
         {/* Header */}
-        <header className="w-full max-w-lg flex flex-col sm:flex-row items-center justify-between gap-4 mb-2">
-          <div className="flex items-center gap-2">
-            <Skull className="size-5 text-[#8b4513]" />
-            <span className="text-xs font-[900] tracking-[0.2em] text-[#8b4513] uppercase">
-              CITADEL WASTELAND
-            </span>
-          </div>
+        <header className="w-full max-w-4xl flex items-center justify-between gap-4 mb-2">
+          {/* Citadel Arcade Badge */}
+          <a 
+            href="https://citadelarcade.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="transition-transform hover:scale-105 active:scale-95"
+          >
+            <div className="flex h-10 items-center justify-center rounded-sm bg-white px-3 shadow-[0_0_25px_rgba(255,255,255,0.1)]">
+              <span className="text-[13px] font-[900] tracking-tighter text-black uppercase whitespace-nowrap" style={{ fontFamily: 'Inter Variable, Inter, sans-serif' }}>
+                CITADEL ARCADE
+              </span>
+            </div>
+          </a>
 
           <a
             href="https://primal.net/odell"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8b4513]/60 hover:text-[#c4813d] transition-colors"
+            className="text-[10px] font-[900] uppercase tracking-[0.2em] text-white/20 hover:text-white transition-colors font-sans"
           >
-            CURATED BY ODELL
+            CURATED BY <span className="text-white/40">ODELL</span>
           </a>
         </header>
 
@@ -132,7 +138,7 @@ const Index = () => {
         {/* Title */}
         <div className="text-center space-y-2 relative">
           <h1 className="font-pixel text-3xl md:text-4xl text-[#c4813d] tracking-widest drop-shadow-[2px_2px_0_#3d2b1f] animate-float">
-            SATS RATTLER
+            CITADEL SNAKE
           </h1>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#8b4513] max-w-xs mx-auto font-bold">
             Pay sats. Eat rats. Survive.
